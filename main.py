@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (
     QLabel, QLineEdit, QPushButton, QComboBox
 )
 from PyQt5.QtCore import Qt
+import math
 
 
 class ShapeSelector(QWidget):
@@ -12,14 +13,14 @@ class ShapeSelector(QWidget):
     proporcionar sus dimensiones correspondientes.
 
     Permite seleccionar entre círculo, triángulo, rectángulo y cuadrado,
-    y captura los valores necesarios para cada figura.
+    y captura los valores necesarios para cada figura para calcular el área.
     """
 
     def __init__(self):
         """Inicializa la ventana principal y los componentes UI."""
         super().__init__()
-        self.setWindowTitle("Selector de Figuras Geométricas")
-        self.setGeometry(100, 100, 400, 200)
+        self.setWindowTitle("Calculadora de Áreas de Figuras")
+        self.setGeometry(100, 100, 400, 220)
         self._init_ui()
 
     def _init_ui(self):
@@ -42,6 +43,7 @@ class ShapeSelector(QWidget):
         # Estado / Resultado
         self.result_label = QLabel("")
         self.result_label.setAlignment(Qt.AlignCenter)
+        self.result_label.setWordWrap(True)
 
         # Agregar widgets al layout principal
         main_layout.addWidget(self.shape_label)
@@ -101,6 +103,8 @@ class ShapeSelector(QWidget):
         elif shape == "Cuadrado":
             self._add_input_field("Lado")
 
+        self.result_label.clear()
+
     def _add_input_field(self, label_text: str):
         """
         Agrega una fila con una etiqueta y un campo de texto para input.
@@ -139,6 +143,34 @@ class ShapeSelector(QWidget):
                         values[key] = None
         return values
 
+    def _calculate_area(self, shape: str, values: dict) -> float:
+        """
+        Calcula el área de la figura dada y sus dimensiones.
+
+        Args:
+            shape (str): Tipo de figura.
+            values (dict): Diccionario con dimensiones.
+
+        Returns:
+            float: Área calculada de la figura.
+        """
+        if shape == "Círculo":
+            radius = values.get("radio", 0)
+            return math.pi * radius ** 2
+        elif shape == "Triángulo":
+            base = values.get("base", 0)
+            height = values.get("altura", 0)
+            return (base * height) / 2
+        elif shape == "Rectángulo":
+            width = values.get("ancho", 0)
+            height = values.get("altura", 0)
+            return width * height
+        elif shape == "Cuadrado":
+            side = values.get("lado", 0)
+            return side ** 2
+        else:
+            return 0
+
     def _on_confirm(self):
         """Manejador para el evento click del botón Confirmar."""
         shape = self.shape_combo.currentText()
@@ -150,7 +182,10 @@ class ShapeSelector(QWidget):
                 self.result_label.setText(f"Error: '{key}' debe ser un número positivo.")
                 return
 
-        self.result_label.setText(f"Figura: {shape} con valores {inputs}")
+        area = self._calculate_area(shape, inputs)
+        self.result_label.setText(
+            f"Figura: {shape}\nDimensiones: {inputs}\nÁrea calculada: {area:.2f}"
+        )
 
 
 def main():
